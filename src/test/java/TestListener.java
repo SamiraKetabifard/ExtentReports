@@ -9,7 +9,6 @@ import org.testng.ITestListener;
 import org.testng.ITestResult;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class TestListener implements ITestListener {
@@ -28,23 +27,16 @@ public class TestListener implements ITestListener {
     @Override
     public void onTestFailure(ITestResult result) {
         ExtentManager.getTest().log(Status.FAIL, result.getThrowable());
-        Object instance = result.getInstance();
-        if (!(instance instanceof BaseTest)) {
-            return;
-        }
-        WebDriver driver = ((BaseTest) instance).getDriver();
-        if (driver == null) {
-            return;
-        }
-        try {
-            Files.createDirectories(Paths.get("reports"));
-            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            String fileName = result.getMethod().getMethodName() + "_" + System.currentTimeMillis() + ".png";
+        BaseTest baseTest = (BaseTest) result.getInstance();
+        WebDriver driver = baseTest.getDriver();
+        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        try{
+            String fileName = result.getMethod().getMethodName()+System.currentTimeMillis()+".png";
             File destination = Paths.get("reports", fileName).toFile();
             FileUtils.copyFile(screenshot, destination);
             ExtentManager.getTest().fail("Failure Screenshot",
                     MediaEntityBuilder.createScreenCaptureFromPath(fileName).build());
-        } catch (IOException e) {
+        }catch(IOException e){
             e.printStackTrace();
         }
     }
