@@ -29,11 +29,14 @@ public class TestListener implements ITestListener {
         ExtentManager.getTest().log(Status.FAIL, result.getThrowable());
         BaseTest baseTest = (BaseTest) result.getInstance();
         WebDriver driver = baseTest.getDriver();
-        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        File screenshot = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
         try{
             String fileName = result.getMethod().getMethodName()+System.currentTimeMillis()+".png";
+            // Define where the screenshot will be saved
             File destination = Paths.get("reports", fileName).toFile();
+            // Copy the screenshot to the reports folder
             FileUtils.copyFile(screenshot, destination);
+            // Attach the screenshot to the failed test in the Extent Report
             ExtentManager.getTest().fail("Failure Screenshot",
                     MediaEntityBuilder.createScreenCaptureFromPath(fileName).build());
         }catch(IOException e){
